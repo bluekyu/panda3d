@@ -21,7 +21,9 @@
 #include "lmatrix.h"
 #include "namable.h"
 
-class MObject;
+#include "pre_maya_include.h"
+#include <maya/MObject.h>
+#include "post_maya_include.h"
 
 /**
  * Corresponds to a single "shader" in Maya.  This extracts out all the

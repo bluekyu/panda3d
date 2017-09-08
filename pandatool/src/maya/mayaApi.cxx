@@ -192,20 +192,37 @@ open_api(string program_name, bool view_license, bool revertdir) {
       }
     }
 
+#if MAYA_API_VERSION < 201700
     int runtime_version_int = rtver_a * 100 + rtver_b * 10;
+    bool is_api_compatible = MAYA_API_VERSION / 10 != runtime_version_int / 10;
+    static const int compiled_version_major = MAYA_API_VERSION / 100;
+    static const int compiled_version_minor = (MAYA_API_VERSION / 10) % 10;
+#elif MAYA_API_VERSION < 20180000
+    int runtime_version_int = MGlobal::apiVersion();
+    bool is_api_compatible = MAYA_API_VERSION / 10 != runtime_version_int / 10;
+    static const int compiled_version_major = MAYA_API_VERSION / 100;
+    static const int compiled_version_minor = (MAYA_API_VERSION / 10) % 10;
+#else
+    int runtime_version_int = MGlobal::apiVersion();
+    bool is_api_compatible = MAYA_API_VERSION / 100 != runtime_version_int / 100;
+
+    // XXX: we assume that minor and patch has two digits in Maya 2018 (20180000).
+    static const int compiled_version_major = MAYA_API_VERSION / 10000;
+    static const int compiled_version_minor = (MAYA_API_VERSION / 100) % 100;
+#endif
 
     if (maya_cat.is_debug()) {
       maya_cat.debug()
         << "Compiled with Maya library version "
-        << (MAYA_API_VERSION / 100) << "." << (MAYA_API_VERSION / 10) % 10
+        << compiled_version_major << "." << compiled_version_minor
         << " (" << MAYA_API_VERSION << "); running with library version "
         << runtime_version << ".\n";
     }
 
-    if (MAYA_API_VERSION / 10 != runtime_version_int / 10) {
+    if (is_api_compatible) {
       maya_cat.warning()
         << "This program was compiled using Maya version "
-        << (MAYA_API_VERSION / 100) << "." << (MAYA_API_VERSION / 10) % 10
+        << compiled_version_major << "." << compiled_version_minor
         << ", but you are now running it with Maya version "
         << simple_runtime_version
         << ".  The program may crash or produce incorrect results.\n\n";

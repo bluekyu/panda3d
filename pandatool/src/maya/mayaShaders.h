@@ -20,8 +20,11 @@
 #include "pvector.h"
 #include "mayaShaderColorDef.h"
 
+#include "pre_maya_include.h"
+#include <maya/MObject.h>
+#include "post_maya_include.h"
+
 class MayaShader;
-class MObject;
 
 /**
  * Collects the set of MayaShaders that have been encountered so far.

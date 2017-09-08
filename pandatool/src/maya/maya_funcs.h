@@ -28,8 +28,6 @@
 #include <maya/MVector.h>
 #include "post_maya_include.h"
 
-class MObject;
-
 bool
 get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug);
 
@@ -107,11 +105,13 @@ string_mfndata_type(MFnData::Type type);
 void
 list_maya_attributes(MObject &node);
 
+#if MAYA_API_VERSION < 20180000
 // Also, we must define some output functions for Maya objects, since we can't
 // use those built into Maya (which forward-defines the ostream type
 // incorrectly).
 INLINE ostream &operator << (ostream &out, const MString &str);
 INLINE ostream &operator << (ostream &out, const MVector &vec);
+#endif  // MAYA_API_VERSION < 20180000
 
 #include "maya_funcs.I"
 #include "maya_funcs.T"

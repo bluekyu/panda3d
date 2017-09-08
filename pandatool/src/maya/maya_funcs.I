@@ -11,6 +11,7 @@
  * @date 2002-04-15
  */
 
+#if MAYA_API_VERSION < 20180000
 /**
  *
  */
@@ -24,3 +25,4 @@ INLINE ostream &operator << (ostream &out, const MString &str) {
 INLINE ostream &operator << (ostream &out, const MVector &vec) {
   return out << vec.x << " " << vec.y << " " << vec.z;
 }
+#endif  // MAYA_API_VERSION < 20180000
