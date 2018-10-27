@@ -1,0 +1,63 @@
+variables:
+  REPO_NAME: 'panda3d'
+
+jobs:
+- job: Windows
+  pool:
+    vmImage: 'VS2017-Win2016'
+
+  strategy:
+    matrix:
+      vc140-x86:
+        ARCHITECTURE_SUFFIX: ''
+        BUILD_TOOLSET_VERSION: '140'
+        FLAGS: '--msvc-version=14.0 --windows-sdk=10 --no-eigen'
+      vc140-x64:
+        ARCHITECTURE_SUFFIX: '-x64'
+        BUILD_TOOLSET_VERSION: '140'
+        FLAGS: '--msvc-version=14.0 --windows-sdk=10 --no-eigen'
+      vc141-x86:
+        ARCHITECTURE_SUFFIX: ''
+        BUILD_TOOLSET_VERSION: '141'
+        FLAGS: '--msvc-version=14.1 --windows-sdk=10 --no-eigen'
+      vc141-x64:
+        ARCHITECTURE_SUFFIX: '-x64'
+        BUILD_TOOLSET_VERSION: '141'
+        FLAGS: '--msvc-version=14.1 --windows-sdk=10 --no-eigen'
+
+  variables:
+    BUILD_CONFIGURATION: 'release'
+    PYTHON_VERSION: '3.7'
+
+  steps:
+  # download artifacts
+  - task: DownloadBuildArtifacts@0
+    displayName: Download panda3d-thirdparty
+    inputs:
+      buildType: 'specific'
+      project: rpcpp-devops
+      pipeline: panda3d-thirdparty
+      specificBuildWithTriggering: true
+      buildVersionToDownload: 'latestFromBranch'
+      branchName: 'refs/heads/master'
+      downloadType: 'single'
+      artifactName: 'panda3d-thirdparty-vc$(BUILD_TOOLSET_VERSION)$(ARCHITECTURE_SUFFIX)-$(BUILD_CONFIGURATION)'
+      downloadPath: '$(System.ArtifactsDirectory)'
+
+  # extract artifacts
+  - task: ExtractFiles@1
+    displayName: Extract thirdparty
+    inputs:
+      archiveFilePatterns: '$(System.ArtifactsDirectory)/panda3d-thirdparty-vc$(BUILD_TOOLSET_VERSION)$(ARCHITECTURE_SUFFIX)-$(BUILD_CONFIGURATION)/thirdparty.7z'
+      destinationFolder: '$(Build.SourcesDirectory)'
+      cleanDestinationFolder: false
+
+  # build
+  - task: PythonScript@0
+    displayName: Build
+    inputs:
+      scriptSource: 'filepath'
+      scriptPath: 'makepanda\makepanda.py'
+      arguments: --everything --git-commit $(Build.SourceVersion) $(FLAGS) --threads=2
+      pythonInterpreter: '$(Build.SourcesDirectory)\thirdparty\win-python$(PYTHON_VERSION)$(ARCHITECTURE_SUFFIX)\python.exe'
+      workingFolder: '$(Build.SourcesDirectory)'
