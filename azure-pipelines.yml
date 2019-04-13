@@ -3,33 +3,32 @@ variables:
 
 jobs:
 - job: Windows
-  pool:
-    vmImage: 'VS2017-Win2016'
+
+  variables:
+    VM_IMAGE_NAME: 'windows-2019'
+    ARCHITECTURE_SUFFIX: '-x64'
+    PYTHON_VERSION: '3.7'
+    CMAKE_GENERATOR: 'Visual Studio 15 2017'
+    CMAKE_GENERATOR_PLATFORM: 'x64'
+    BUILD_TOOLSET_VERSION: '141'
+    BUILD_CONFIGURATION: 'release'
+    PANDA_BUILD_OPTIMIZE: '4'
 
   strategy:
     matrix:
       vc140-x64-release:
-        TARGET_ARCHITECTURE: '64'
-        ARCHITECTURE_SUFFIX: '-x64'
+        VM_IMAGE_NAME: 'vs2017-win2016'
         BUILD_TOOLSET_VERSION: '140'
-        BUILD_CONFIGURATION: 'release'
-        PANDA_BUILD_OPTIMIZE: '4'
       vc141-x64-debug:
-        TARGET_ARCHITECTURE: '64'
-        ARCHITECTURE_SUFFIX: '-x64'
-        BUILD_TOOLSET_VERSION: '141'
+        VM_IMAGE_NAME: 'vs2017-win2016'
         BUILD_CONFIGURATION: 'debug'
         PANDA_BUILD_OPTIMIZE: '1'
       vc141-x64-release:
-        TARGET_ARCHITECTURE: '64'
-        ARCHITECTURE_SUFFIX: '-x64'
-        BUILD_TOOLSET_VERSION: '141'
+        VM_IMAGE_NAME: 'vs2017-win2016'
         BUILD_CONFIGURATION: 'release'
-        PANDA_BUILD_OPTIMIZE: '4'
 
-  variables:
-    PYTHON_VERSION: '3.7'
-    CMAKE_GENERATOR: 'Visual Studio 15 2017 Win64'
+  pool:
+    vmImage: $(VM_IMAGE_NAME)
 
   steps:
   # initialize
@@ -37,7 +36,6 @@ jobs:
     inputs:
       versionSpec: $(PYTHON_VERSION)
       addToPath: true
-      architecture: x$(TARGET_ARCHITECTURE)
 
   # download artifacts
   - task: DownloadBuildArtifacts@0
@@ -66,7 +64,7 @@ jobs:
     displayName: CMake Generate
     inputs:
       cmakeArgs: >-
-        .. -G "$(CMAKE_GENERATOR)" -Wno-dev -T "v$(BUILD_TOOLSET_VERSION),host=x64"
+        .. -G "$(CMAKE_GENERATOR)" -A $(CMAKE_GENERATOR_PLATFORM) -Wno-dev -T "v$(BUILD_TOOLSET_VERSION),host=x64"
         -DCMAKE_INSTALL_PREFIX="$(Build.BinariesDirectory)/$(REPO_NAME)"
         -Dpanda3d_build_eigen=OFF
         -Dpanda3d_build_optimize=$(PANDA_BUILD_OPTIMIZE)
@@ -99,3 +97,78 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       artifactName: '$(REPO_NAME)-vc$(BUILD_TOOLSET_VERSION)$(ARCHITECTURE_SUFFIX)-$(BUILD_CONFIGURATION)'
+
+# -------------------------------------------------------------------------------------------------
+- job: Linux
+
+  variables:
+    ARCHITECTURE_SUFFIX: '-x64'
+    PYTHON_VERSION: '3.7'
+    CMAKE_GENERATOR: 'Unix Makefiles'
+    BUILD_CONFIGURATION: 'release'
+    PANDA_BUILD_OPTIMIZE: '4'
+    CC: /usr/bin/gcc-7
+    CXX: /usr/bin/g++-7
+
+  strategy:
+    matrix:
+      x64-debug:
+        BUILD_CONFIGURATION: 'debug'
+        PANDA_BUILD_OPTIMIZE: '1'
+      x64-release:
+        BUILD_CONFIGURATION: 'release'
+
+  pool:
+    vmImage: 'ubuntu-16.04'
+
+  steps:
+  # initialize
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: $(PYTHON_VERSION)
+      addToPath: true
+
+  # apt
+  - script: |
+      sudo apt-get install -y --no-install-recommends libjpeg-dev libtiff-dev libgl1-mesa-dev libvorbis-dev libopenal-dev libharfbuzz-dev libopenexr-dev libassimp-dev
+    displayName: Apt Install
+
+  # configure & generate
+  - task: CMake@1
+    displayName: CMake Generate
+    inputs:
+      cmakeArgs: >-
+        .. -G "$(CMAKE_GENERATOR)" -Wno-dev
+        -DCMAKE_INSTALL_PREFIX="$(Build.BinariesDirectory)/$(REPO_NAME)"
+        -Dpanda3d_build_eigen=OFF
+        -Dpanda3d_build_optimize=$(PANDA_BUILD_OPTIMIZE)
+
+  # build
+  - task: CMake@1
+    displayName: CMake Build
+    inputs:
+      cmakeArgs: --build . --config $(BUILD_CONFIGURATION)
+
+  # tests
+  - script: ctest -C $(BUILD_CONFIGURATION) --output-on-failure
+    displayName: CTest
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+
+  # install
+  - task: CMake@1
+    displayName: CMake Install
+    inputs:
+      cmakeArgs: --build . --config $(BUILD_CONFIGURATION) --target install
+
+  # packaging
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: '$(Build.BinariesDirectory)/$(REPO_NAME)'
+      archiveType: 'tar'
+      tarCompression: 'xz'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(REPO_NAME).tar.xz'
+
+  # publish
+  - task: PublishBuildArtifacts@1
+    inputs:
+      artifactName: '$(REPO_NAME)-linux$(ARCHITECTURE_SUFFIX)-$(BUILD_CONFIGURATION)'
