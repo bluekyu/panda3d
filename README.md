@@ -5,13 +5,13 @@ This repository is used to develop [Render Pipeline C++](https://github.com/blue
 
 
 ## Build Status
-| Build Status                       | About                       |
-| :--------------------------------: | :-------------------------: |
-| [![azure-badge]][azure-link]       | Visual Studio 2015 and 2017 |
-| [![appveyor-badge]][appveyor-link] | Visual Studio 2017 Preview  |
+| Build Status                       | About                                                 |
+| :--------------------------------: | :---------------------------------------------------: |
+| [![azure-badge]][azure-link]       | Visual Studio 2015, 2017, 2019 / Ubuntu 16.04 (GCC 7) |
+| [![appveyor-badge]][appveyor-link] | Visual Studio 2017 Preview                            |
 
-[azure-badge]: https://dev.azure.com/bluekyu/rpcpp-devops/_apis/build/status/panda3d/panda3d "Azure build status"
-[azure-link]: https://dev.azure.com/bluekyu/rpcpp-devops/_build/latest?definitionId=3 "Azure build link"
+[azure-badge]: https://dev.azure.com/bluekyu/rpcpp-devops/_apis/build/status/panda3d/panda3d?branchName=master "Azure build status"
+[azure-link]: https://dev.azure.com/bluekyu/rpcpp-devops/_build/latest?definitionId=3&branchName=master "Azure build link"
 [appveyor-badge]: https://ci.appveyor.com/api/projects/status/dti693iydj981tu5/branch/master?svg=true "AppVeyor build status"
 [appveyor-link]: https://ci.appveyor.com/project/bluekyu/panda3d/branch/master "AppVeyor build link"
 

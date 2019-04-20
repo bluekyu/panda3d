@@ -8,9 +8,9 @@ jobs:
     VM_IMAGE_NAME: 'windows-2019'
     ARCHITECTURE_SUFFIX: '-x64'
     PYTHON_VERSION: '3.7'
-    CMAKE_GENERATOR: 'Visual Studio 15 2017'
+    CMAKE_GENERATOR: 'Visual Studio 16 2019'
     CMAKE_GENERATOR_PLATFORM: 'x64'
-    BUILD_TOOLSET_VERSION: '141'
+    BUILD_TOOLSET_VERSION: '142'
     BUILD_CONFIGURATION: 'release'
     PANDA_BUILD_OPTIMIZE: '4'
 
@@ -18,13 +18,22 @@ jobs:
     matrix:
       vc140-x64-release:
         VM_IMAGE_NAME: 'vs2017-win2016'
+        CMAKE_GENERATOR: 'Visual Studio 15 2017'
         BUILD_TOOLSET_VERSION: '140'
       vc141-x64-debug:
         VM_IMAGE_NAME: 'vs2017-win2016'
+        CMAKE_GENERATOR: 'Visual Studio 15 2017'
+        BUILD_TOOLSET_VERSION: '141'
         BUILD_CONFIGURATION: 'debug'
         PANDA_BUILD_OPTIMIZE: '1'
       vc141-x64-release:
         VM_IMAGE_NAME: 'vs2017-win2016'
+        CMAKE_GENERATOR: 'Visual Studio 15 2017'
+        BUILD_TOOLSET_VERSION: '141'
+      vc142-x64-debug:
+        BUILD_CONFIGURATION: 'debug'
+        PANDA_BUILD_OPTIMIZE: '1'
+      vc142-x64-release:
         BUILD_CONFIGURATION: 'release'
 
   pool:
