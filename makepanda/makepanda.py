@@ -3220,12 +3220,12 @@ if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
     else:
         dir = os.path.join(SDK["VISUALSTUDIO"], "VC", "redist", GetTargetArch(), crtname)
 
-    if os.path.isfile(os.path.join(dir, "msvcr" + vcver_dll + ".dll")):
-        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcr" + vcver_dll + ".dll"))
-    if os.path.isfile(os.path.join(dir, "msvcp" + vcver_dll + ".dll")):
-        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcp" + vcver_dll + ".dll"))
-    if os.path.isfile(os.path.join(dir, "vcruntime" + vcver_dll + ".dll")):
-        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "vcruntime" + vcver_dll + ".dll"))
+    if os.path.isfile(os.path.join(dir, "msvcr" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcr" + vcver + ".dll"))
+    if os.path.isfile(os.path.join(dir, "msvcp" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "msvcp" + vcver + ".dll"))
+    if os.path.isfile(os.path.join(dir, "vcruntime" + vcver + ".dll")):
+        CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "vcruntime" + vcver + ".dll"))
 
 ########################################################################
 ##
