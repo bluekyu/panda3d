@@ -22,6 +22,13 @@ This is a list of all the people who are contributing financially to Panda3D.  I
 ![Benefactors](https://opencollective.com/panda3d/tiers/benefactor.svg?avatarHeight=48&width=600)
 
 * Sam Edwards
+* Max Voss
+
+## Enthusiasts
+
+![Benefactors](https://opencollective.com/panda3d/tiers/enthusiast.svg?avatarHeight=48&width=600)
+
+* Eric Thomson
 
 ## Backers
 

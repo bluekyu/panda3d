@@ -2878,8 +2878,13 @@ write_module_class(ostream &out, Object *obj) {
 
   // destructor tp_dealloc;
   out << "    &Dtool_FreeInstance_" << ClassName << ",\n";
-  // printfunc tp_print;
+
+  out << "#if PY_VERSION_HEX >= 0x03080000\n";
+  out << "    0, // tp_vectorcall_offset\n";
+  out << "#else\n";
   write_function_slot(out, 4, slots, "tp_print");
+  out << "#endif\n";
+
   // getattrfunc tp_getattr;
   write_function_slot(out, 4, slots, "tp_getattr");
   // setattrfunc tp_setattr;
@@ -3069,6 +3074,10 @@ write_module_class(ostream &out, Object *obj) {
   // destructor tp_finalize
   out << "#if PY_VERSION_HEX >= 0x03040000\n";
   out << "    nullptr, // tp_finalize\n";
+  out << "#endif\n";
+  // vectorcallfunc tp_vectorcall
+  out << "#if PY_VERSION_HEX >= 0x03080000\n";
+  out << "    nullptr, // tp_vectorcall\n";
   out << "#endif\n";
   out << "  },\n";
 
@@ -6408,9 +6417,21 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
       TypeManager::is_vector_unsigned_char(type)) {
     // Most types are now handled by the many overloads of Dtool_WrapValue,
     // defined in py_panda.h.
-    indent(out, indent_level)
-      << "return Dtool_WrapValue(" << return_expr << ");\n";
-
+    if (!remap->_has_this && remap->_cppfunc != nullptr &&
+        remap->_cppfunc->get_simple_name() == "encrypt_string" &&
+        return_expr == "return_value") {
+      // Temporary hack to fix #684 to avoid an ABI change.
+      out << "#if PY_MAJOR_VERSION >= 3\n";
+      indent(out, indent_level)
+        << "return PyBytes_FromStringAndSize((char *)return_value.data(), (Py_ssize_t)return_value.size());\n";
+      out << "#else\n";
+      indent(out, indent_level)
+        << "return PyString_FromStringAndSize((char *)return_value.data(), (Py_ssize_t)return_value.size());\n";
+      out << "#endif\n";
+    } else {
+      indent(out, indent_level)
+        << "return Dtool_WrapValue(" << return_expr << ");\n";
+    }
   } else if (TypeManager::is_pointer(type)) {
     bool is_const = TypeManager::is_const_pointer_to_anything(type);
     bool owns_memory = remap->_return_value_needs_management;
